@@ -53,22 +53,26 @@ class MainWindow(QMainWindow):
 
         layout = QVBoxLayout()
 
-        label = QLabel("Welcome to Habit Tracker!")
-        layout.addWidget(label)
+#        label = QLabel("Welcome to Habit Tracker!")
+#        layout.addWidget(label)
 
         button = QPushButton("Click Me")
-        button.clicked.connect(self.on_button_click)
+        button.clicked.connect(self.start_click)
         layout.addWidget(button)
 
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
 
-    def on_button_click(self):
+    def start_click(self):
         print("Button clicked!")
 
 def register_habits(habits_file):
     with open(habits_file, 'r') as hf:
         pass
+
+app = QApplication(sys.argv)
+window = MainWindow()
+window.show()
 
 print("It is working.")
