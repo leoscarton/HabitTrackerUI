@@ -10,12 +10,11 @@ def register_habits(habits_file):
         df = pd.read_csv(hf, sep=';')
         df.dropna(inplace=True, axis=0)
 
-        df['Done'] = df['Done'].astype(bool)
         return df
 
 if __name__ == "__main__":
     # Register habits from a CSV file
-    habits_file = 'habits_df_file.csv'
+    habits_file = 'habit_df_file.csv'
     df = register_habits(habits_file)
 
     app = QApplication(sys.argv)
