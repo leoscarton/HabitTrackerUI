@@ -1,16 +1,17 @@
 from PySide6.QtCore import QAbstractTableModel, Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow, QTableView
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow, QTableView, QHeaderView
 import pandas as pd
 import numpy as np
 
 class Habit():
-    def __init__(self, name:str, type:str, freq:int = 7):
+    def __init__(self, name:str, type:str, freq:int = 7, instances:int = 0):
         self._name = name
         self._type = type
         self._week_frequency = freq
+        self._instances = instances
 
     def __repr__(self):
-        return f"Habit Data:\n Name: {self._name}\n Type: {self._type}\n Weekly Frequency: {self._week_frequency}"
+        return f"Habit Data:\n Name: {self._name}\n Type: {self._type}\n Weekly Frequency: {self._week_frequency}\n Instances: {self._instances}"
 
     def change_name(self, new_name:str):
         assert new_name is not None and (len(new_name) > 0), "New name must not be empty."
@@ -30,14 +31,25 @@ class Habit():
         assert new_freq != self._week_frequency, "New frequency must be different from the current frequency."
         
         self._week_frequency = new_freq
-    
-    def alter_habit(self, new_name:str = None, new_type:str = None, new_freq:int = None):
+
+    def change_instances(self, new_instances:int):
+        assert isinstance(new_instances, int), "New instances must be an integer."
+        assert new_instances >= 0, "New instances must be greater than or equal to zero."
+        
+        self._instances = new_instances
+
+  #  def increment_instances(self):
+  #      self._instances += 1
+
+    def alter_habit(self, new_name:str = None, new_type:str = None, new_freq:int = None, new_instances:int = None):
         if new_name is not None:
             self.change_name(new_name)
         if new_type is not None:
             self.change_type(new_type)
         if new_freq is not None:
             self.change_frequency(new_freq)
+        if new_instances is not None:
+            self.change_instances(new_instances)
     
     def get_name(self):
         return self._name
@@ -47,6 +59,9 @@ class Habit():
     
     def get_frequency(self):
         return self._week_frequency
+    
+    def get_instances(self):
+        return self._instances
 
 class HabitInstance():
     def __init__(self, habit:Habit, date:str, check:bool = False):
@@ -78,12 +93,38 @@ class HabitTable(QAbstractTableModel):
         self._habit_dataframe = pd.DataFrame({
             'Name': [habit.get_name() for habit in habits],
             'Type': [habit.get_type() for habit in habits],
-            'Weekly Frequency': [habit.get_frequency() for habit in habits]
+            'Weekly Frequency': [habit.get_frequency() for habit in habits],
+            'Instances': [habit.get_instances() for habit in habits]
         })
 
     def get_habits(self):
         for habit in self._habits:
             print(habit.__repr__())
+    
+    def get_dataframe(self):
+        return self._habit_dataframe
+
+    def rowCount(self, parent=None):
+        return self._habit_dataframe.shape[0]
+
+    def columnCount(self, parent=None):
+        return self._habit_dataframe.shape[1]
+
+    def data(self, index, role=Qt.DisplayRole):
+        if not index.isValid():
+            return None
+        if role == Qt.DisplayRole:
+            value = self._habit_dataframe.iloc[index.row(), index.column()]
+            return str(value)
+        return None
+
+    def headerData(self, section, orientation, role):
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                return self._habit_dataframe.columns[section]
+            else:
+                return str(section)
+        return None
 
 class MainWindow(QMainWindow):
     def __init__(self, habit_list:list=[]):        
@@ -105,6 +146,7 @@ class MainWindow(QMainWindow):
 
     def start_click(self):
         print("Start button clicked!")
+        self._habit_table.get_dataframe()
         habit_window = HabitWindow(parent=self, habit_table=self._habit_table)
         habit_window.show()
 
@@ -120,6 +162,11 @@ class HabitWindow(QWidget):
 
         table_view = QTableView()
         table_view.setModel(self._habit_table)
+        header = table_view.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.Stretch)
+
+        self._habit_table.get_dataframe()
+
         layout.addWidget(table_view)
 
         self.setLayout(layout)

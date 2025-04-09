@@ -22,7 +22,7 @@ if __name__ == "__main__":
     habit_list = register_habits(habits_file)
 
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = MainWindow(habit_list)
     window.show()
 
     app.exec()
