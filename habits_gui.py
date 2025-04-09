@@ -1,5 +1,6 @@
 from PySide6.QtCore import QAbstractTableModel, Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow, QTableView, QHeaderView
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow, QTableView, QHeaderView, QLineEdit
+from PySide6.QtWidgets import QFormLayout, QLabel, QComboBox, QSpinBox, QMessageBox
 import pandas as pd
 import numpy as np
 
@@ -103,6 +104,15 @@ class HabitTable(QAbstractTableModel):
     
     def get_dataframe(self):
         return self._habit_dataframe
+    
+    def update_dataframe(self):
+        self._habit_dataframe = pd.DataFrame({
+            'Name': [habit.get_name() for habit in self._habits],
+            'Type': [habit.get_type() for habit in self._habits],
+            'Weekly Frequency': [habit.get_frequency() for habit in self._habits],
+            'Instances': [habit.get_instances() for habit in self._habits]
+        })
+        self.layoutChanged.emit()
 
     def rowCount(self, parent=None):
         return self._habit_dataframe.shape[0]
@@ -146,14 +156,12 @@ class MainWindow(QMainWindow):
 
     def start_click(self):
         print("Start button clicked!")
-        self._habit_table.get_dataframe()
         habit_window = HabitWindow(parent=self, habit_table=self._habit_table)
         habit_window.show()
 
 class HabitWindow(QWidget):
     def __init__(self, habit_table:HabitTable, parent=None):
         super().__init__(parent)
-        #self.setWindowTitle("Habit Tracker by Leonardo Scarton - Habits")
         self.setGeometry(0, 0, 800, 600)
 
         self._habit_table = habit_table
@@ -177,3 +185,54 @@ class HabitWindow(QWidget):
 
     def add_click(self):
         print("Button clicked!")
+        add_habit_window = AddHabitWindow(parent=self)
+        add_habit_window.show()
+
+class AddHabitWindow(QMainWindow):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setGeometry(0, 0, 400, 200)
+        self.setWindowTitle("Add New Habit")
+
+        layout = QFormLayout(self)
+
+        layout.addRow(QLabel("Habit Name:"), QLineEdit())
+        layout.addRow(QLabel("Habit Type:"), QLineEdit())
+        layout.addRow(QLabel("Weekly Frequency:"), QSpinBox())
+
+        enter_button = QPushButton("Enter")
+        enter_button.clicked.connect(self.enter_habit)
+        layout.addRow(enter_button)
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close)
+        layout.addRow(cancel_button)
+
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
+
+    def close(self):
+        super().close()
+        self.parent().show()
+
+    def enter_habit(self):
+        name = self.findChild(QLineEdit).text()
+        type_ = self.findChild(QLineEdit).text()
+        freq = self.findChild(QSpinBox).value()
+
+        if not name or not type_:
+            QMessageBox.warning(self, "Input Error", "Please fill in all fields.")
+            return
+
+        new_habit = Habit(name, type_, freq)
+        self.parent()._habit_table._habits.append(new_habit)
+        self.parent()._habit_table.update_dataframe()
+
+        self.close()
+        
+
+        
+
+
+
+        
