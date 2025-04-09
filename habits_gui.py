@@ -137,7 +137,7 @@ class HabitTable(QAbstractTableModel):
         return None
 
 class MainWindow(QMainWindow):
-    def __init__(self, habit_list:list=[]):        
+    def __init__(self, habit_list:list=[], habit_instance_list:list=[], parent=None):        
         super().__init__()
         self.setWindowTitle("Habit Tracker by Leonardo Scarton")
         self.setGeometry(100, 100, 800, 600)
@@ -145,6 +145,12 @@ class MainWindow(QMainWindow):
         self._layout = QVBoxLayout()
 
         self._habit_table = HabitTable(habit_list)
+        self._habit_window = HabitWindow(parent=self, habit_table=self._habit_table)
+        self._habit_instance_table = HabitInstanceTable(habit_instance_list)
+        self._habit_instance_window = HabitInstanceWindow(parent=self, habit_instance_table=self._habit_instance_table)
+
+        self._habit_window.hide()
+        self._habit_instance_window.hide()
 
         container = QWidget()
         container.setLayout(self._layout)
@@ -155,9 +161,8 @@ class MainWindow(QMainWindow):
         self._layout.addWidget(start_button)
 
     def start_click(self):
-        print("Start button clicked!")
-        habit_window = HabitWindow(parent=self, habit_table=self._habit_table)
-        habit_window.show()
+        self.setCentralWidget(self._habit_window)
+        self._habit_window.show()
 
 class HabitWindow(QWidget):
     def __init__(self, habit_table:HabitTable, parent=None):
@@ -179,14 +184,27 @@ class HabitWindow(QWidget):
 
         self.setLayout(layout)
 
+        button_layout = QHBoxLayout()
+
         button_add = QPushButton("Add New Habit")
         button_add.clicked.connect(self.add_click)
-        layout.addWidget(button_add)
+
+        button_change_window = QPushButton("Habit Instances")
+        button_change_window.clicked.connect(self.change_window_click)
+
+        button_layout.addWidget(button_add)
+        button_layout.addWidget(button_change_window)
+        layout.addLayout(button_layout)
 
     def add_click(self):
         print("Button clicked!")
         add_habit_window = AddHabitWindow(parent=self)
         add_habit_window.show()
+    
+    def change_window_click(self):
+        print("Change window button clicked!")
+        self.parent().setCentralWidget(self.parent()._habit_instance_window)
+        self.parent().show()
 
 class AddHabitWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -196,9 +214,13 @@ class AddHabitWindow(QMainWindow):
 
         layout = QFormLayout(self)
 
-        layout.addRow(QLabel("Habit Name:"), QLineEdit())
-        layout.addRow(QLabel("Habit Type:"), QLineEdit())
-        layout.addRow(QLabel("Weekly Frequency:"), QSpinBox())
+        self._habit_name_line = QLineEdit()
+        self._habit_type_line = QLineEdit()
+        self._weekly_freq_line = QSpinBox()
+
+        layout.addRow(QLabel("Habit Name:"), self._habit_name_line)
+        layout.addRow(QLabel("Habit Type:"), self._habit_type_line)
+        layout.addRow(QLabel("Weekly Frequency:"), self._weekly_freq_line)
 
         enter_button = QPushButton("Enter")
         enter_button.clicked.connect(self.enter_habit)
@@ -213,12 +235,11 @@ class AddHabitWindow(QMainWindow):
 
     def close(self):
         super().close()
-        self.parent().show()
 
     def enter_habit(self):
-        name = self.findChild(QLineEdit).text()
-        type_ = self.findChild(QLineEdit).text()
-        freq = self.findChild(QSpinBox).value()
+        name = self._habit_name_line.text()
+        type_ = self._habit_type_line.text()
+        freq = self._weekly_freq_line.value()
 
         if not name or not type_:
             QMessageBox.warning(self, "Input Error", "Please fill in all fields.")
@@ -229,10 +250,132 @@ class AddHabitWindow(QMainWindow):
         self.parent()._habit_table.update_dataframe()
 
         self.close()
-        
 
-        
+class HabitInstanceTable(QAbstractTableModel):
+    def __init__(self, habit_instances:list=[], parent=None):
+        super().__init__(parent)
+        if not all(isinstance(instance, HabitInstance) for instance in habit_instances):
+            raise ValueError("All elements must be instances of the HabitInstance class.")
+        self._habit_instances = habit_instances
 
+        self._habit_instance_dataframe = pd.DataFrame({
+            'Habit': [instance.get_habit() for instance in habit_instances],
+            'Date': [instance.get_date_string() for instance in habit_instances],
+            'Done?': [instance._check for instance in habit_instances]
+        })
 
+    def rowCount(self, parent=None):
+        return self._habit_instance_dataframe.shape[0]
 
-        
+    def columnCount(self, parent=None):
+        return self._habit_instance_dataframe.shape[1]
+
+    def get_dataframe(self):
+        return self._habit_instance_dataframe
+
+    def update_dataframe(self):
+        self._habit_instance_dataframe = pd.DataFrame({
+            'Habit': [instance.get_habit() for instance in self._habit_instances],
+            'Date': [instance.get_date_string() for instance in self._habit_instances],
+            'Done?': [instance._check for instance in self._habit_instances]
+        })
+        self.layoutChanged.emit()
+
+    def data(self, index, role=Qt.DisplayRole):
+        if not index.isValid():
+            return None
+        if role == Qt.DisplayRole:
+            value = self._habit_instance_dataframe.iloc[index.row(), index.column()]
+            return str(value)
+        return None
+
+    def headerData(self, section, orientation, role):
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                return self._habit_instance_dataframe.columns[section]
+            else:
+                return str(section+1)
+        return None
+
+class HabitInstanceWindow(QWidget):
+    def __init__(self, habit_instance_table:HabitInstanceTable, parent=None):
+        super().__init__(parent)
+        self.setGeometry(0, 0, 800, 600)
+
+        self._habit_instance_table = habit_instance_table
+
+        layout = QVBoxLayout()
+
+        table_view = QTableView()
+        table_view.setModel(self._habit_instance_table)
+        header = table_view.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.Stretch)
+
+        self._habit_instance_table.get_dataframe()
+
+        layout.addWidget(table_view)
+
+        self.setLayout(layout)
+
+        button_layout = QHBoxLayout()
+
+        button_add = QPushButton("Add New Habit Instance")
+        button_add.clicked.connect(self.add_click)
+
+        button_change_window = QPushButton("Habit Instances")
+        button_change_window.clicked.connect(self.change_window_click)
+
+        button_layout.addWidget(button_add)
+        button_layout.addWidget(button_change_window)
+        layout.addLayout(button_layout)
+
+    def add_click(self):
+        add_habit_instance_window = AddHabitInstanceWindow(parent=self)
+        add_habit_instance_window.show()
+    
+    def change_window_click(self):
+        self.parent().setCentralWidget(self.parent()._habit_window)
+        self.parent().show()
+
+class AddHabitInstanceWindow(QMainWindow):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setGeometry(0, 0, 400, 200)
+        self.setWindowTitle("Habit Instances")
+
+        layout = QFormLayout(self)
+
+        self._habit_instance_line = QLineEdit()
+        self._date_line = QLineEdit()
+        self._check_box = QComboBox()
+        self._check_box.addItems(["Yes", "No"])
+
+        layout.addRow(QLabel("Habit Instance:"), self._habit_instance_line)
+        layout.addRow(QLabel("Date:"), self._date_line)
+        layout.addRow(QLabel("Done?"), self._check_box)
+
+        enter_button = QPushButton("Enter")
+        enter_button.clicked.connect(self.enter_habit_instance)
+        layout.addRow(enter_button)
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close)
+        layout.addRow(cancel_button)
+
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
+    
+    def enter_habit_instance(self):
+        habit_name = self._habit_instance_line.text()
+        date = self._date_line.text()
+        check = self._check_box.currentText() == "Yes"
+
+        if not habit_name or not date:
+            QMessageBox.warning(self, "Input Error", "Please fill in all fields.")
+            return
+
+        new_habit_instance = HabitInstance(habit_name, date, check)
+        self.parent()._habit_instance_table._habit_instances.append(new_habit_instance)
+        self.parent()._habit_instance_table.update_dataframe()
+
+        self.close()
