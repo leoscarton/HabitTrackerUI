@@ -123,7 +123,7 @@ class HabitTable(QAbstractTableModel):
             if orientation == Qt.Horizontal:
                 return self._habit_dataframe.columns[section]
             else:
-                return str(section)
+                return str(section+1)
         return None
 
 class MainWindow(QMainWindow):
