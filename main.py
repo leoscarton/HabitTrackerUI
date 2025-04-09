@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QApplication
 
 def register_habits(habits_file):
     with open(habits_file, 'r') as hf:
-        df = pd.read_csv(hf, sep=';')
+        df = pd.read_csv(hf, sep=',', header=0, names=['Habit', 'Type', 'Frequency', 'Check'])
         df.dropna(inplace=True, axis=0)
 
         return df
