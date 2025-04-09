@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QM
 import pandas as pd
 import numpy as np
 
+#Still deciding whether this class in needed or not
 class Habit():
     def __init__(self, name:str, type:str, freq:int = 7, check:bool = False):
         self._name = name
@@ -92,13 +93,8 @@ class HabitTable(QAbstractTableModel):
     def __init__(self, df: pd.DataFrame, parent=None):
         super().__init__(parent)
         self._habits = df.copy()
+        self._habits.dropna(inplace=True, axis=0)
 
-    def rowCount(self):
-        return self._habits.shape[0]
-
-    def columnCount(self):
-        return self._habits.shape[1]
-    
     def getData(self):
         return self._habits.copy()
 
@@ -110,19 +106,20 @@ class MainWindow(QMainWindow):
 
         layout = QVBoxLayout()
 
-#        button = QPushButton("Click Me")
-#        button.clicked.connect(self.start_click)
-#        layout.addWidget(button)
-
-        model = HabitTable(df)
+        habit_table = HabitTable(df)
         table_view = QTableView()
-        table_view.setModel(model)
+        table_view.setModel(habit_table)
         layout.addWidget(table_view)
+
+        button = QPushButton("Add New Habit")
+        #button.setStyleSheet("background-color: lightblue; font-size: 16px;")
+        button.clicked.connect(self.add_click)
+        layout.addWidget(button)
 
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
 
 
-#    def start_click(self):
-#        print("Button clicked!")
+    def add_click(self):
+        print("Button clicked!")

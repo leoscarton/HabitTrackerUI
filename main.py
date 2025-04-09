@@ -6,11 +6,11 @@ from PySide6.QtWidgets import QApplication
 
 
 def register_habits(habits_file):
+    df = pd.DataFrame()
     with open(habits_file, 'r') as hf:
-        df = pd.read_csv(hf, sep=',', header=0, names=['Habit', 'Type', 'Frequency', 'Check'])
-        df.dropna(inplace=True, axis=0)
+        df = pd.read_csv(hf, sep=',', header=0, names=['Habit', 'Type', 'Frequency', 'Done'])
 
-        return df
+    return df
 
 if __name__ == "__main__":
     # Register habits from a CSV file
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     df = register_habits(habits_file)
 
     app = QApplication(sys.argv)
-    window = habits_gui.MainWindow()
+    window = habits_gui.MainWindow(df)
     window.show()
 
     app.exec()
