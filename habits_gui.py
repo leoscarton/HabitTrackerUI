@@ -3,16 +3,14 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QM
 import pandas as pd
 import numpy as np
 
-#Still deciding whether this class in needed or not
 class Habit():
-    def __init__(self, name:str, type:str, freq:int = 7, check:bool = False):
+    def __init__(self, name:str, type:str, freq:int = 7):
         self._name = name
         self._type = type
         self._week_frequency = freq
-        self._check = check
 
     def __repr__(self):
-        return f"Habit Data: Name = {self._name}, Type = {self._type}, Weekly Frequency = {self._week_frequency}, Done? = {'Yes' if self._check else 'No'}"
+        return f"Habit Data:\n Name: {self._name}\n Type: {self._type}\n Weekly Frequency: {self._week_frequency}"
 
     def change_name(self, new_name:str):
         assert new_name is not None and (len(new_name) > 0), "New name must not be empty."
@@ -32,22 +30,14 @@ class Habit():
         assert new_freq != self._week_frequency, "New frequency must be different from the current frequency."
         
         self._week_frequency = new_freq
-
-    def change_check(self, new_check:bool):
-        assert isinstance(new_check, bool), "New check must be a boolean."
-        assert new_check != self._check, "New check must be different from the current check."
-        
-        self._check = new_check
     
-    def alter_habit(self, new_name:str = None, new_type:str = None, new_freq:int = None, new_check:bool = None):
+    def alter_habit(self, new_name:str = None, new_type:str = None, new_freq:int = None):
         if new_name is not None:
             self.change_name(new_name)
         if new_type is not None:
             self.change_type(new_type)
         if new_freq is not None:
             self.change_frequency(new_freq)
-        if new_check is not None:
-            self.change_check(new_check)
     
     def get_name(self):
         return self._name
@@ -57,69 +47,86 @@ class Habit():
     
     def get_frequency(self):
         return self._week_frequency
-    
-    def get_check(self):
-        return self._check
 
-'''
-class HabitGroup():
-    def __init__(self, name:str, habits:list[Habit] = []):
-        self.name = name
-        self.habits = habits
+class HabitInstance():
+    def __init__(self, habit:Habit, date:str, check:bool = False):
+        self._habit = habit
+        self._date = pd.to_datetime(date)
+        self._check = check
+
+    def get_date_string(self):
+        date_string = self._date.strftime("%d/%m/%Y")
+        return date_string
+
+    def get_habit(self):
+        return self._habit.__repr__()
 
     def __repr__(self):
-        return f"Habit Group: Name = {self.name}, Habits = {self.habits}"
-    
-    def change_group_name(self, new_name:str):
-        assert isinstance(new_name, str), "New name must be a string."
-        assert new_name is not None and (len(new_name) > 0), "New name must not be empty."
-        assert new_name != self.name, "New name must be different from the current name."
-        
-        self.name = new_name
+        return f"Habit Instance Data:\n Habit: {self.get_habit}\n Date: {self.get_date_string}\n Done?: {'Yes' if self._check else 'No'}"
 
-    def add_habit(self, habit:Habit):
-        assert habit.name not in [h.name for h in self.habits], "Habit name already exists in the group."
-        assert habit is not None, "Added object must not be empty."
-        assert len(habit.name) > 0, "Added object must have a valid name."
-        assert habit.type == self.name, "Habit type must match the group name."
-
-        self.habits.append(habit)
-
-    def remove_habit(self, habit:Habit):
-        self.habits.remove(habit)
-'''
+    def change_check(self, new_check:bool):
+        assert isinstance(new_check, bool), "New check must be a boolean."        
+        self._check = new_check
         
 class HabitTable(QAbstractTableModel):
-    def __init__(self, df: pd.DataFrame, parent=None):
+    def __init__(self, habits:list=[], parent=None):
         super().__init__(parent)
-        self._habits = df.copy()
-        self._habits.dropna(inplace=True, axis=0)
+        if not all(isinstance(habit, Habit) for habit in habits):
+            raise ValueError("All elements must be instances of the Habit class.")
+        self._habits = habits
 
-    def getData(self):
-        return self._habits.copy()
+        self._habit_dataframe = pd.DataFrame({
+            'Name': [habit.get_name() for habit in habits],
+            'Type': [habit.get_type() for habit in habits],
+            'Weekly Frequency': [habit.get_frequency() for habit in habits]
+        })
+
+    def get_habits(self):
+        for habit in self._habits:
+            print(habit.__repr__())
 
 class MainWindow(QMainWindow):
-    def __init__(self, df: pd.DataFrame = pd.DataFrame(columns=["Habit", "Type", "Frequency", "Done"])):        
+    def __init__(self, habit_list:list=[]):        
         super().__init__()
         self.setWindowTitle("Habit Tracker by Leonardo Scarton")
         self.setGeometry(100, 100, 800, 600)
 
-        layout = QVBoxLayout()
+        self._layout = QVBoxLayout()
 
-        habit_table = HabitTable(df)
-        table_view = QTableView()
-        table_view.setModel(habit_table)
-        layout.addWidget(table_view)
-
-        button1 = QPushButton("Add New Habit")
-        #button1.setStyleSheet("background-color: lightblue; font-size: 16px;")
-        button1.clicked.connect(self.add_click)
-        layout.addWidget(button1)
+        self._habit_table = HabitTable(habit_list)
 
         container = QWidget()
-        container.setLayout(layout)
+        container.setLayout(self._layout)
         self.setCentralWidget(container)
 
+        start_button = QPushButton("Start")
+        start_button.clicked.connect(self.start_click)
+        self._layout.addWidget(start_button)
+
+    def start_click(self):
+        print("Start button clicked!")
+        habit_window = HabitWindow(parent=self, habit_table=self._habit_table)
+        habit_window.show()
+
+class HabitWindow(QWidget):
+    def __init__(self, habit_table:HabitTable, parent=None):
+        super().__init__(parent)
+        #self.setWindowTitle("Habit Tracker by Leonardo Scarton - Habits")
+        self.setGeometry(0, 0, 800, 600)
+
+        self._habit_table = habit_table
+
+        layout = QVBoxLayout()
+
+        table_view = QTableView()
+        table_view.setModel(self._habit_table)
+        layout.addWidget(table_view)
+
+        self.setLayout(layout)
+
+        button_add = QPushButton("Add New Habit")
+        button_add.clicked.connect(self.add_click)
+        layout.addWidget(button_add)
 
     def add_click(self):
         print("Button clicked!")
