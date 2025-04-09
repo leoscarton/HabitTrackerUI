@@ -111,10 +111,10 @@ class MainWindow(QMainWindow):
         table_view.setModel(habit_table)
         layout.addWidget(table_view)
 
-        button = QPushButton("Add New Habit")
-        #button.setStyleSheet("background-color: lightblue; font-size: 16px;")
-        button.clicked.connect(self.add_click)
-        layout.addWidget(button)
+        button1 = QPushButton("Add New Habit")
+        #button1.setStyleSheet("background-color: lightblue; font-size: 16px;")
+        button1.clicked.connect(self.add_click)
+        layout.addWidget(button1)
 
         container = QWidget()
         container.setLayout(layout)
