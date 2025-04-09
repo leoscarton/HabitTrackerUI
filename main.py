@@ -4,7 +4,7 @@ import sys
 from habits_gui import MainWindow, Habit, HabitInstance
 from PySide6.QtWidgets import QApplication
 
-
+'''
 def register_habits(habits_file):
     habit_list = []
     with open(habits_file, 'r') as hf:
@@ -15,14 +15,15 @@ def register_habits(habits_file):
             habit_list.append(habit)
     
     return habit_list
-
+'''
+    
 if __name__ == "__main__":
     # Register habits from a CSV file
-    habits_file = 'habits.csv'
-    habit_list = register_habits(habits_file)
+#    habits_file = 'habits.csv'
+#    habit_list = register_habits(habits_file)
 
     app = QApplication(sys.argv)
-    window = MainWindow(habit_list)
+    window = MainWindow()
     window.show()
 
     app.exec()
