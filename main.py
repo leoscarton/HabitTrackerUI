@@ -18,7 +18,7 @@ def register_habits(habits_file):
 
 if __name__ == "__main__":
     # Register habits from a CSV file
-    habits_file = 'habit_df_file.csv'
+    habits_file = 'habits.csv'
     habit_list = register_habits(habits_file)
 
     app = QApplication(sys.argv)
