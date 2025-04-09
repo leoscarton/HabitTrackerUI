@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from PySide6.QtWidgets import QApplication, QLabel, QWidget, QVBoxLayout, QHBoxLayout, QPushButton
+from PySide6.QtWidgets import QApplication, QLabel, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow
 import sys
 
 class Habit:
@@ -44,6 +44,28 @@ class HabitGroup():
 
     def remove_habit(self, habit:Habit):
         self.habits.remove(habit)
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Habit Tracker by Leonardo Scarton")
+        self.setGeometry(100, 100, 800, 600)
+
+        layout = QVBoxLayout()
+
+        label = QLabel("Welcome to Habit Tracker!")
+        layout.addWidget(label)
+
+        button = QPushButton("Click Me")
+        button.clicked.connect(self.on_button_click)
+        layout.addWidget(button)
+
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
+
+    def on_button_click(self):
+        print("Button clicked!")
 
 def register_habits(habits_file):
     with open(habits_file, 'r') as hf:
