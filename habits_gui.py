@@ -379,3 +379,23 @@ class AddHabitInstanceWindow(QMainWindow):
         self.parent()._habit_instance_table.update_dataframe()
 
         self.close()
+
+class DataWindow(QMainWindow):
+    # Preencher posteriormente, ainda não coloquei nada aqui
+    def __init__(self, habit_table:HabitTable, parent=None):
+        super().__init__(parent)
+        self.setGeometry(0, 0, 800, 600)
+        self.setWindowTitle("Habit Data")
+
+        layout = QVBoxLayout()
+
+        table_view = QTableView()
+        table_view.setModel(habit_table)
+        header = table_view.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.Stretch)
+
+        layout.addWidget(table_view)
+
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
