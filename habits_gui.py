@@ -103,7 +103,7 @@ class HabitTable(QAbstractTableModel):
             print(habit.__repr__())
     
     def get_dataframe(self):
-        return self._habit_dataframe
+        return self._habit_dataframe #.copy() ?
     
     def update_dataframe(self):
         self._habit_dataframe = pd.DataFrame({
