@@ -156,11 +156,12 @@ class MainWindow(QMainWindow):
         container.setLayout(self._layout)
         self.setCentralWidget(container)
 
-        start_button = QPushButton("Start")
-        start_button.clicked.connect(self.start_click)
-        self._layout.addWidget(start_button)
+        self._start_button = QPushButton("Start")
+        self._start_button.clicked.connect(self.start_click)
+        self._layout.addWidget(self._start_button)
 
     def start_click(self):
+        self._start_button.hide()
         self.setCentralWidget(self._habit_window)
         self._habit_window.show()
 
@@ -203,8 +204,9 @@ class HabitWindow(QWidget):
     
     def change_window_click(self):
         print("Change window button clicked!")
+        self.hide()
         self.parent().setCentralWidget(self.parent()._habit_instance_window)
-        self.parent().show()
+        self.parent()._habit_instance_window.show()
 
 class AddHabitWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -212,7 +214,7 @@ class AddHabitWindow(QMainWindow):
         self.setGeometry(0, 0, 400, 200)
         self.setWindowTitle("Add New Habit")
 
-        layout = QFormLayout(self)
+        layout = QFormLayout()
 
         self._habit_name_line = QLineEdit()
         self._habit_type_line = QLineEdit()
@@ -322,7 +324,7 @@ class HabitInstanceWindow(QWidget):
         button_add = QPushButton("Add New Habit Instance")
         button_add.clicked.connect(self.add_click)
 
-        button_change_window = QPushButton("Habit Instances")
+        button_change_window = QPushButton("Habit List")
         button_change_window.clicked.connect(self.change_window_click)
 
         button_layout.addWidget(button_add)
@@ -335,7 +337,7 @@ class HabitInstanceWindow(QWidget):
     
     def change_window_click(self):
         self.parent().setCentralWidget(self.parent()._habit_window)
-        self.parent().show()
+        self.parent()._habit_window.show()
 
 class AddHabitInstanceWindow(QMainWindow):
     def __init__(self, parent=None):
