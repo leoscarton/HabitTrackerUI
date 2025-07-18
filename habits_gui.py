@@ -88,7 +88,7 @@ class Habit():
         return self._type
     
     @type.setter
-    def change_type(self, new_type:str):
+    def type(self, new_type:str):
         assert new_type is not None and (len(new_type) > 0), "New type must not be empty."
         assert new_type != self._type, "New type must be different from the current type."
         
@@ -149,8 +149,13 @@ class HabitInstance():
         return self._habit.__repr__()
 
     def __repr__(self):
-        return f"Habit Instance Data:\n Habit: {self.get_habit}\n Date: {self.get_date_string}\n Done?: {'Yes' if self._check else 'No'}"
+        return f"Habit Instance Data:\n Habit: {self.habit}\n Date: {self.date_string}\n Done?: {'Yes' if self._check else 'No'}"
 
+    @property
+    def check(self):
+        return self._check
+    
+    @check.setter
     def change_check(self, new_check:bool):
         assert isinstance(new_check, bool), "New check must be a boolean."        
         self._check = new_check
@@ -164,10 +169,10 @@ class HabitTable(QAbstractTableModel):
         self._csv_handler = csv_handler if csv_handler else CSVHandler()
 
         self._habit_dataframe = pd.DataFrame({
-            'Name': [habit.get_name() for habit in habits],
-            'Type': [habit.get_type() for habit in habits],
-            'Weekly Frequency': [habit.get_frequency() for habit in habits],
-            'Instances': [habit.get_instances() for habit in habits]
+            'Name': [habit.name for habit in habits],
+            'Type': [habit.type for habit in habits],
+            'Weekly Frequency': [habit.week_frequency for habit in habits],
+            'Instances': [habit.instances for habit in habits]
         })
 
     @property
@@ -181,10 +186,10 @@ class HabitTable(QAbstractTableModel):
     
     def update_dataframe(self):
         self._habit_dataframe = pd.DataFrame({
-            'Name': [habit.get_name() for habit in self._habits],
-            'Type': [habit.get_type() for habit in self._habits],
-            'Weekly Frequency': [habit.get_frequency() for habit in self._habits],
-            'Instances': [habit.get_instances() for habit in self._habits]
+            'Name': [habit.name for habit in self._habits],
+            'Type': [habit.type for habit in self._habits],
+            'Weekly Frequency': [habit.week_frequency for habit in self._habits],
+            'Instances': [habit.instances for habit in self._habits]
         })
         self.layoutChanged.emit()
 
@@ -279,7 +284,7 @@ class HabitWindow(QWidget):
         header = table_view.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)
 
-        self._habit_table.get_dataframe()
+        #self._habit_table.habit_dataframe()
 
         layout.addWidget(table_view)
 
@@ -362,8 +367,8 @@ class HabitInstanceTable(QAbstractTableModel):
         self._csv_handler = csv_handler if csv_handler else CSVHandler()
 
         self._habit_instance_dataframe = pd.DataFrame({
-            'Habit': [instance.get_habit() for instance in habit_instances],
-            'Date': [instance.get_date_string() for instance in habit_instances],
+            'Habit': [instance.habit() for instance in habit_instances],
+            'Date': [instance.date_string() for instance in habit_instances],
             'Done?': [instance._check for instance in habit_instances]
         })
 
@@ -373,14 +378,14 @@ class HabitInstanceTable(QAbstractTableModel):
     def columnCount(self, parent=None):
         return self._habit_instance_dataframe.shape[1]
 
-    def get_dataframe(self):
+    def dataframe(self):
         return self._habit_instance_dataframe
 
     def update_dataframe(self):
         self._habit_instance_dataframe = pd.DataFrame({
-            'Habit': [instance.get_habit() for instance in self._habit_instances],
-            'Date': [instance.get_date_string() for instance in self._habit_instances],
-            'Done?': [instance._check for instance in self._habit_instances]
+            'Habit': [instance.habit for instance in self._habit_instances],
+            'Date': [instance.date for instance in self._habit_instances],
+            'Done?': [instance.check for instance in self._habit_instances]
         })
         self.layoutChanged.emit()
 
@@ -435,7 +440,7 @@ class HabitInstanceWindow(QWidget):
         header = table_view.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)
 
-        self._habit_instance_table.get_dataframe()
+        self._habit_instance_table.dataframe()
 
         layout.addWidget(table_view)
 
