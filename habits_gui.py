@@ -191,6 +191,8 @@ class HabitTable(QAbstractTableModel):
             'Weekly Frequency': [habit.week_frequency for habit in self._habits],
             'Instances': [habit.instances for habit in self._habits]
         })
+        self.save_df_to_csv(self._csv_handler.filename)
+        #logging.info("Habit DataFrame updated and saved to CSV.")
         self.layoutChanged.emit()
 
     def rowCount(self, parent=None):
@@ -252,9 +254,19 @@ class MainWindow(QMainWindow):
         self._habit_window.hide()
         self._habit_instance_window.hide()
 
-        container = QWidget()
-        container.setLayout(self._layout)
-        self.setCentralWidget(container)
+        self.container_start = QWidget()
+        self.container_start.setLayout(self._layout)
+        self.setCentralWidget(self.container_start)
+
+        self.container_habit_table = QWidget()
+        self.container_habit_table.setLayout(self._habit_window.layout())
+        self._layout.addWidget(self.container_habit_table)
+        self.container_habit_table.hide()
+
+        self.container_habit_instance_table = QWidget()
+        self.container_habit_instance_table.setLayout(self._habit_instance_window.layout())
+        self._layout.addWidget(self.container_habit_instance_table)
+        self.container_habit_instance_table.hide()
 
         self._start_button = QPushButton("Start")
         self._start_button.clicked.connect(self.start_click)
@@ -262,8 +274,8 @@ class MainWindow(QMainWindow):
 
     def start_click(self):
         self._start_button.hide()
-        self.setCentralWidget(self._habit_window)
-        self._habit_window.show()
+        #self.setCentralWidget(self._habit_window)
+        self.container_habit_table.show()
 
 
 ##########################################################################
@@ -309,9 +321,9 @@ class HabitWindow(QWidget):
     
     def change_window_click(self):
         print("Change window button clicked!")
-        self.hide()
-        self.parent().setCentralWidget(self.parent()._habit_instance_window)
-        self.parent()._habit_instance_window.show()
+        self.parent().container_habit_table.hide()
+        #self.parent().setCentralWidget(self.parent()._habit_instance_window)
+        self.parent().container_habit_instance_table.show()
 
 class AddHabitWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -336,9 +348,9 @@ class AddHabitWindow(QMainWindow):
         cancel_button.clicked.connect(self.close)
         layout.addRow(cancel_button)
 
-        container = QWidget()
-        container.setLayout(layout)
-        self.setCentralWidget(container)
+        container_start = QWidget()
+        container_start.setLayout(layout)
+        self.setCentralWidget(container_start)
 
     def close(self):
         super().close()
@@ -463,8 +475,9 @@ class HabitInstanceWindow(QWidget):
         add_habit_instance_window.show()
     
     def change_window_click(self):
-        self.parent().setCentralWidget(self.parent()._habit_window)
-        self.parent()._habit_window.show()
+        self.parent().container_habit_instance_table.hide()
+        #self.parent().setCentralWidget(self.parent()._habit_window)
+        self.parent().container_habit_table.show()
 
 class AddHabitInstanceWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -490,9 +503,9 @@ class AddHabitInstanceWindow(QMainWindow):
         cancel_button.clicked.connect(self.close)
         layout.addRow(cancel_button)
 
-        container = QWidget()
-        container.setLayout(layout)
-        self.setCentralWidget(container)
+        container_start = QWidget()
+        container_start.setLayout(layout)
+        self.setCentralWidget(container_start)
     
     def enter_habit_instance(self):
         habit_name = self._habit_instance_line.text()
@@ -529,6 +542,6 @@ class DataWindow(QMainWindow):
 
         layout.addWidget(table_view)
 
-        container = QWidget()
-        container.setLayout(layout)
-        self.setCentralWidget(container)
+        container_start = QWidget()
+        container_start.setLayout(layout)
+        self.setCentralWidget(container_start)
