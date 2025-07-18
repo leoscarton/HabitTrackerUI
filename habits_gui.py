@@ -250,6 +250,8 @@ class MainWindow(QMainWindow):
         self._habit_window = HabitWindow(parent=self, habit_table=self._habit_table)
         self._habit_instance_table = HabitInstanceTable(habit_instance_list)
         self._habit_instance_window = HabitInstanceWindow(parent=self, habit_instance_table=self._habit_instance_table)
+        self._data_window = DataWindow(habit_table=self._habit_table, parent=self)
+
 
         self._habit_window.hide()
         self._habit_instance_window.hide()
@@ -267,6 +269,11 @@ class MainWindow(QMainWindow):
         self.container_habit_instance_table.setLayout(self._habit_instance_window.layout())
         self._layout.addWidget(self.container_habit_instance_table)
         self.container_habit_instance_table.hide()
+
+        self.container_data_window = QWidget()
+        self.container_data_window.setLayout(self._data_window.layout())
+        self._layout.addWidget(self.container_data_window)
+        self.container_data_window.hide()
 
         self._start_button = QPushButton("Start")
         self._start_button.clicked.connect(self.start_click)
@@ -307,11 +314,15 @@ class HabitWindow(QWidget):
         button_add = QPushButton("Add New Habit")
         button_add.clicked.connect(self.add_click)
 
-        button_change_window = QPushButton("Habit Instances")
-        button_change_window.clicked.connect(self.change_window_click)
+        button_change_habit_instance_window = QPushButton("Habit Instances")
+        button_change_habit_instance_window.clicked.connect(self.change_window_to_habit_instace_window)
+
+        button_change_data_window = QPushButton("Habit Data")
+        button_change_data_window.clicked.connect(self.change_window_to_data_window)
 
         button_layout.addWidget(button_add)
-        button_layout.addWidget(button_change_window)
+        button_layout.addWidget(button_change_habit_instance_window)
+        button_layout.addWidget(button_change_data_window)
         layout.addLayout(button_layout)
 
     def add_click(self):
@@ -319,11 +330,16 @@ class HabitWindow(QWidget):
         add_habit_window = AddHabitWindow(parent=self)
         add_habit_window.show()
     
-    def change_window_click(self):
+    def change_window_to_habit_instace_window(self):
         print("Change window button clicked!")
         self.parent().container_habit_table.hide()
         #self.parent().setCentralWidget(self.parent()._habit_instance_window)
         self.parent().container_habit_instance_table.show()
+
+    def change_window_to_data_window(self):
+        print("Change window to data button clicked!")
+        self.parent().container_habit_table.hide()
+        self.parent().container_data_window.show()
 
 class AddHabitWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -463,21 +479,29 @@ class HabitInstanceWindow(QWidget):
         button_add = QPushButton("Add New Habit Instance")
         button_add.clicked.connect(self.add_click)
 
-        button_change_window = QPushButton("Habit List")
-        button_change_window.clicked.connect(self.change_window_click)
+        button_change_habit_window = QPushButton("Habit List")
+        button_change_habit_window.clicked.connect(self.change_window_to_habit_window)
+
+        button_change_data_window = QPushButton("Habit Data")
+        button_change_data_window.clicked.connect(self.change_window_to_data_window)
 
         button_layout.addWidget(button_add)
-        button_layout.addWidget(button_change_window)
+        button_layout.addWidget(button_change_habit_window)
+        button_layout.addWidget(button_change_data_window)
         layout.addLayout(button_layout)
 
     def add_click(self):
         add_habit_instance_window = AddHabitInstanceWindow(parent=self)
         add_habit_instance_window.show()
     
-    def change_window_click(self):
+    def change_window_to_habit_window(self):
         self.parent().container_habit_instance_table.hide()
         #self.parent().setCentralWidget(self.parent()._habit_window)
         self.parent().container_habit_table.show()
+    
+    def change_window_to_data_window(self):
+        self.parent().container_habit_instance_table.hide()
+        self.parent().container_data_window.show()
 
 class AddHabitInstanceWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -527,7 +551,6 @@ class AddHabitInstanceWindow(QMainWindow):
 ##########################################################################
 
 class DataWindow(QMainWindow):
-    # Preencher posteriormente, ainda não coloquei nada aqui
     def __init__(self, habit_table:HabitTable, parent=None):
         super().__init__(parent)
         self.setGeometry(0, 0, 800, 600)
@@ -542,6 +565,26 @@ class DataWindow(QMainWindow):
 
         layout.addWidget(table_view)
 
-        container_start = QWidget()
-        container_start.setLayout(layout)
-        self.setCentralWidget(container_start)
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
+    
+        button_layout = QHBoxLayout()
+
+        button_change_habit_window = QPushButton("Habit List")
+        button_change_habit_window.clicked.connect(self.change_window_to_habit_window)
+
+        button_change_habit_instance_window = QPushButton("Habit Instances")
+        button_change_habit_instance_window.clicked.connect(self.change_window_to_habit_instance_window)
+
+        button_layout.addWidget(button_change_habit_window)
+        button_layout.addWidget(button_change_habit_instance_window)
+        layout.addLayout(button_layout)
+
+    def change_window_to_habit_window(self):
+        self.parent().container_data_window.hide()
+        self.parent().container_habit_table.show()
+    
+    def change_window_to_habit_instance_window(self):
+        self.parent().container_data_window.hide()
+        self.parent().container_habit_instance_table.show()

@@ -1,5 +1,5 @@
-import pandas as pd
-import numpy as np
+#import pandas as pd
+#import numpy as np
 import sys
 from habits_gui import MainWindow
 from PySide6.QtWidgets import QApplication
