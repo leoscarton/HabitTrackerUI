@@ -4,6 +4,10 @@ from PySide6.QtWidgets import QFormLayout, QLabel, QComboBox, QSpinBox, QMessage
 import pandas as pd
 import numpy as np
 
+##########################################################################
+            # Habit, HabitInstance, and HabitTable Classes
+##########################################################################
+
 class Habit():
     def __init__(self, name:str, type:str, freq:int = 7, instances:int = 0):
         self._name = name
@@ -136,6 +140,10 @@ class HabitTable(QAbstractTableModel):
                 return str(section+1)
         return None
 
+##########################################################################
+                        # MainWindow Class
+##########################################################################
+
 class MainWindow(QMainWindow):
     def __init__(self, habit_list:list=[], habit_instance_list:list=[], parent=None):        
         super().__init__()
@@ -164,6 +172,11 @@ class MainWindow(QMainWindow):
         self._start_button.hide()
         self.setCentralWidget(self._habit_window)
         self._habit_window.show()
+
+
+##########################################################################
+            # HabitWindow and AddHabitWindow Classes
+##########################################################################
 
 class HabitWindow(QWidget):
     def __init__(self, habit_table:HabitTable, parent=None):
@@ -299,6 +312,10 @@ class HabitInstanceTable(QAbstractTableModel):
                 return str(section+1)
         return None
 
+##########################################################################
+        # HabitInstanceWindow and AddHabitInstanceWindow Classes
+##########################################################################
+
 class HabitInstanceWindow(QWidget):
     def __init__(self, habit_instance_table:HabitInstanceTable, parent=None):
         super().__init__(parent)
@@ -381,6 +398,10 @@ class AddHabitInstanceWindow(QMainWindow):
         self.parent()._habit_instance_table.update_dataframe()
 
         self.close()
+
+##########################################################################
+                        # DataWindow Classes
+##########################################################################
 
 class DataWindow(QMainWindow):
     # Preencher posteriormente, ainda não coloquei nada aqui
