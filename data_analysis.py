@@ -2,16 +2,18 @@ import pandas as pd
 import numpy as np
 from habits_gui import HabitTable, HabitInstanceTable
 
-#Preencher, arquivo para análise de dados
-
+# Necessary?
 def table_to_df(table):
     assert isinstance(table, (HabitTable, HabitInstanceTable)), "Invalid table type"
     df = table.get_dataframe()
     return df
 
+# Plots the habit data in a graph
 def plot_habit(df:pd.DataFrame):
     pass
 
+# Calculates statistics for a specific habit
+# This function assumes the DataFrame has columns 'Habit', 'Done?'
 def calculate_habit_stats(df:pd.DataFrame, habit_name:str):
     """
     Calculate statistics for a habit DataFrame.
@@ -29,6 +31,8 @@ def calculate_habit_stats(df:pd.DataFrame, habit_name:str):
     }
     return stats
 
+# Displays statistics for a specific habit
+# This function prints the statistics calculated by calculate_habit_stats
 def show_habit_stats(df:pd.DataFrame, habit_name:str):
     """
     Display statistics for a specific habit.
