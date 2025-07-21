@@ -142,12 +142,14 @@ class Habit():
 
 
 class HabitInstance():
-    def __init__(self, habit:Habit, date:str, check:bool = False):
+    def __init__(self, habit:Habit, date:str, check:bool = False, out_of_control:bool = False):
         # Initializing the variables
         self._habit = habit
         self._date = pd.to_datetime(date)
         self._check = check
+        self._out_of_control = out_of_control
 
+    # Setters and getters
     @property
     def date(self):
         date_string = self._date.strftime("%d/%m/%Y")
@@ -157,9 +159,6 @@ class HabitInstance():
     def habit(self):
         return self._habit.__repr__()
 
-    def __repr__(self):
-        return f"Habit Instance Data:\n Habit: {self.habit}\n Date: {self.date_string}\n Done?: {'Yes' if self._check else 'No'}"
-
     @property
     def check(self):
         return self._check
@@ -168,7 +167,20 @@ class HabitInstance():
     def change_check(self, new_check:bool):
         assert isinstance(new_check, bool), "New check must be a boolean."        
         self._check = new_check
-        
+
+    @property
+    def out_of_control(self):
+        return self._out_of_control
+    
+    @out_of_control.setter
+    def out_of_control(self, new_out_of_control:bool):
+        assert isinstance(new_out_of_control, bool), "New out_of_control must be a boolean."
+        self._out_of_control = new_out_of_control
+
+    # String representation of the HabitInstance class
+    def __repr__(self):
+        return f"Habit Instance Data:\n Habit: {self.habit}\n Date: {self.date_string}\n Done?: {'Yes' if self._check else 'No'}"
+          
 class HabitTable(QAbstractTableModel):
     def __init__(self, habits:list=[], parent=None, csv_handler:CSVHandler = None):
         super().__init__(parent)
@@ -433,14 +445,16 @@ class HabitInstanceTable(QAbstractTableModel):
         if not all(isinstance(instance, HabitInstance) for instance in habit_instances):
             raise ValueError("All elements must be instances of the HabitInstance class.")
         self._habit_instances = habit_instances
+        
         self._csv_handler = csv_handler if csv_handler else CSVHandler()
 
         # Creating a DataFrame to hold the habit instances
-        # The DataFrame will have columns for Habit, Date, and Done
+        # The DataFrame will have columns for Habit, Date, Done and Conditions Out of Control
         self._habit_instance_dataframe = pd.DataFrame({
-            'Habit': [instance.habit() for instance in habit_instances],
-            'Date': [instance.date_string() for instance in habit_instances],
-            'Done?': [instance._check for instance in habit_instances]
+            'Habit': [instance.habit for instance in habit_instances],
+            'Date': [instance.date_string for instance in habit_instances],
+            'Done?': [instance._check for instance in habit_instances],
+            'Conditions Out of Control?': [instance._out_of_control for instance in habit_instances]
         })
 
     # Row and Column Count methods
@@ -462,7 +476,8 @@ class HabitInstanceTable(QAbstractTableModel):
         self._habit_instance_dataframe = pd.DataFrame({
             'Habit': [instance.habit for instance in self._habit_instances],
             'Date': [instance.date for instance in self._habit_instances],
-            'Done?': [instance.check for instance in self._habit_instances]
+            'Done?': [instance.check for instance in self._habit_instances],
+            'Conditions Out of Control?': [instance.out_of_control for instance in self._habit_instances]
         })
         self.layoutChanged.emit()
 
