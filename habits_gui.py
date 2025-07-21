@@ -372,13 +372,13 @@ class HabitWindow(QWidget):
 
     # Change Window to Habit Instance Window Handler
     def change_window_to_habit_instace_window(self):
-        self.parent().container_habit_table.hide()
-        self.parent().container_habit_instance_table.show()
+        self.parent.container_habit_table.hide()
+        self.parent.container_habit_instance_table.show()
 
     # Change Window to Data Window Handler
     def change_window_to_data_window(self):
-        self.parent().container_habit_table.hide()
-        self.parent().container_data_window.show()
+        self.parent.container_habit_table.hide()
+        self.parent.container_data_window.show()
 
 class AddHabitWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -432,8 +432,8 @@ class AddHabitWindow(QMainWindow):
             return
 
         new_habit = Habit(name, type_, freq)
-        self.parent()._habit_table._habits.append(new_habit)
-        self.parent()._habit_table.update_dataframe()
+        self.parent._habit_table._habits.append(new_habit)
+        self.parent._habit_table.update_dataframe()
 
         self.close()
 
@@ -445,7 +445,7 @@ class HabitInstanceTable(QAbstractTableModel):
         if not all(isinstance(instance, HabitInstance) for instance in habit_instances):
             raise ValueError("All elements must be instances of the HabitInstance class.")
         self._habit_instances = habit_instances
-        
+
         self._csv_handler = csv_handler if csv_handler else CSVHandler()
 
         # Creating a DataFrame to hold the habit instances
@@ -547,7 +547,7 @@ class HabitInstanceWindow(QWidget):
         header = table_view.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)
 
-        self._habit_instance_table.dataframe()
+        #self._habit_instance_table.dataframe()
 
         layout.addWidget(table_view)
 
@@ -583,14 +583,14 @@ class HabitInstanceWindow(QWidget):
 
     # Change Window to Habit Window Handler
     def change_window_to_habit_window(self):
-        self.parent().container_habit_instance_table.hide()
+        self.parent.container_habit_instance_table.hide()
         #self.parent().setCentralWidget(self.parent()._habit_window)
-        self.parent().container_habit_table.show()
+        self.parent.container_habit_table.show()
     
     # Change Window to Data Window Handler
     def change_window_to_data_window(self):
-        self.parent().container_habit_instance_table.hide()
-        self.parent().container_data_window.show()
+        self.parent.container_habit_instance_table.hide()
+        self.parent.container_data_window.show()
 
 class AddHabitInstanceWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -609,11 +609,15 @@ class AddHabitInstanceWindow(QMainWindow):
         self._date_line = QLineEdit()
         self._check_box = QComboBox()
         self._check_box.addItems(["Yes", "No"])
+        self._out_of_control_box = QComboBox()
+        self._out_of_control_box.addItems(["No", "Yes"])
+
 
         # Adding input fields to the layout
         layout.addRow(QLabel("Habit Instance:"), self._habit_instance_line)
         layout.addRow(QLabel("Date:"), self._date_line)
         layout.addRow(QLabel("Done?"), self._check_box)
+        layout.addRow(QLabel("Conditions Out of Control?"), self._out_of_control_box)
 
         # Creating buttons for entering the habit instance and canceling
         # Enter button will call the enter_habit_instance method
@@ -638,14 +642,15 @@ class AddHabitInstanceWindow(QMainWindow):
         habit_name = self._habit_instance_line.text()
         date = self._date_line.text()
         check = self._check_box.currentText() == "Yes"
+        out_of_control = self._out_of_control_box.currentText() == "Yes"
 
         if not habit_name or not date:
             QMessageBox.warning(self, "Input Error", "Please fill in all fields.")
             return
 
-        new_habit_instance = HabitInstance(habit_name, date, check)
-        self.parent()._habit_instance_table._habit_instances.append(new_habit_instance)
-        self.parent()._habit_instance_table.update_dataframe()
+        new_habit_instance = HabitInstance(habit_name, date, check, out_of_control)
+        self.parent._habit_instance_table._habit_instances.append(new_habit_instance)
+        self.parent._habit_instance_table.update_dataframe()
 
         self.close()
 
@@ -705,11 +710,11 @@ class DataWindow(QMainWindow):
     # Change Window to Habit Window Handler
     # This method will hide the DataWindow and show the HabitWindow
     def change_window_to_habit_window(self):
-        self.parent().container_data_window.hide()
-        self.parent().container_habit_table.show()
+        self.parent.container_data_window.hide()
+        self.parent.container_habit_table.show()
     
     # Change Window to Habit Instance Window Handler
     # This method will hide the DataWindow and show the HabitInstanceWindow
     def change_window_to_habit_instance_window(self):
-        self.parent().container_data_window.hide()
-        self.parent().container_habit_instance_table.show()
+        self.parent.container_data_window.hide()
+        self.parent.container_habit_instance_table.show()
